@@ -123,9 +123,9 @@
     (cons "5" "5")
     (cons "-10" "-10")
     
-    ;;;;;;;;;;;;;;;;;;;;;; Should we support fractions? ;;;;;;;;;
-    ;(cons "2/4" "1/2")
-    ;(cons "-3 / 5 " "-3/5")
+    ;;Fractions
+    (cons "2/4" "1/2")
+    (cons "-3/5 " "-3/5")
     
     ;;Strings
     (cons "\"123abc\"" "\"123abc\"")
@@ -147,14 +147,31 @@
     
 ))
 
-(define or-if-tests
+(define or-if-begin-tests
 (list
+    (cons "(or #t)" "#t")
+    (cons "(or #f)" "#f")
+    (cons "(or (or #f #f) (or #t))" "#t")
+    (cons "(or (or #f #f) (or 0))" "0")
+    
     (cons "(or #f #f)" "#f")
     (cons "(or #f #t)" "#t")
     (cons "(if #t 1 0)" "1")
+    
+    ;;Nested If
+    (cons "(if #t (if #t (if #t (if #t (if #t
+	    (if #t (if #t (if #t (if #t 
+	    (if #t (if #t (if #t (if #t (if #t #t #f) #f) #f) #f) #f) #f) #f) #f) #f) 
+	    #f) #f ) #f) #f) #f)" "#t")
+    
+    
     (cons "(if #f 1 0)" "0")
     (cons "(or 25 #t #f 1 2 3 #f)" "25")
     (cons "(and 25 #t #f 1 2 3 #f)" "#f")
+    
+    (cons "(begin (or #t #t) (or #f))" "#f")
+    (cons "(begin #\\a)" "#\\a")
+    (cons "(begin (or #t #t) (or #f) (begin 1 2 3 45 \"Its a String\"))" "\"Its a String\"")
 ))
 
 
@@ -163,5 +180,5 @@
 (runAllTests
   (list      
       (cons "Constants Table" constants-table-tests)  
-      (cons "Or And If" or-if-tests)      
+      (cons "Or, If and Begin" or-if-begin-tests)      
 ))

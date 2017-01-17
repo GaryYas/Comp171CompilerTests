@@ -14,7 +14,7 @@
 			(cond ((equal? my-res output)
 				(display (format "\033[1;32m Success! ☺ \033[0m \n")) #t)
 				(else 
-				(display (format "\033[1;31m Failed! ☹\033[0m , Expected: ~s, Actual: ~s \n" output my-res)) #f))
+				(display (format "\033[1;31m Failed! ☹\033[0m , \n\nExpected:\n ~s, \n\nActual:\n ~s \n\n" output my-res)) #f))
 			)))
 			
 (define runTests
@@ -42,10 +42,64 @@
 		(newline))
 ))
 
-(define create-sub-constants-tests
+(define parse-opt
+    (lambda (x)
+	(annotate-tc 
+	  (pe->lex-pe
+	    (box-set
+	      (remove-applic-lambda-nil
+		(eliminate-nested-defines
+		  (parse x))))))))
+
+;; (define create-sub-constants-tests
+;;   (list
+;;     ;; Format (list func-name list-of-args expected-result)
+;;     (list create-sub-constants (list '(1 2 3)) '(1 2 3 () (3) (2 3) (1 2 3)))
+;; ))
+
+(define create-constants-table-tests
   (list
     ;; Format (list func-name list-of-args expected-result)
-    (list create-sub-constants (list '(1 2 3)) '(1 2 3 (3) (2 3) (1 2 3)))
+    
+    ;; Empty exp
+    (list create-constants-table (list (parse-opt ''())) 
+      (list (list (void) 1) '(() 2) '(#t 3) '(#f 5)))  
+      
+    ;; Empty vec
+    (list create-constants-table (list (parse-opt ''#()))
+      (list (list (void) 1) '(() 2) '(#t 3) '(#f 5) '(#() 7)))
+      
+    ;; Empty String
+    (list create-constants-table (list (parse-opt '(f ""))) 
+      (list (list (void) 1) '(() 2) '(#t 3) '(#f 5) '("" 7)))      
+    
+    ;; Chars
+    (list create-constants-table (list (parse-opt '(#\a #\b))) 
+      (list (list (void) 1) '(() 2) '(#t 3) '(#f 5) '(#\a 7) '(#\b 9)))      
+      
+    (list create-constants-table (list (parse-opt '(f "abc"))) 
+      (list (list (void) 1) '(() 2) '(#t 3) '(#f 5) '("abc" 7))) 
+      
+      
+    (list create-constants-table (list (parse-opt '(f #t #f))) 
+      (list (list (void) 1) '(() 2) '(#t 3) '(#f 5)))     
+      
+    (list create-constants-table (list '(const 1)) 
+      (list (list (void) 1) '(() 2) '(#t 3) '(#f 5) '(1 7)))
+    (list create-constants-table (list '((const 1) (const 2))) 
+      (list (list (void) 1) '(() 2) '(#t 3) '(#f 5) '(1 7) '(2 9)))	
+    (list create-constants-table (list '(const (1 2 3))) 
+	  (list (list (void) 1) '(() 2) '(#t 3) '(#f 5) '(1 7) '(2 9) '(3 11) '((3) 13) '((2 3) 16) '((1 2 3) 19)))
+    (list create-constants-table (list (parse-opt ''#(1 2 3))) 
+      (list (list (void) 1) '(() 2) '(#t 3) '(#f 5) '(1 7) '(2 9) '(3 11) '(#(1 2 3) 13))) 	
+      
+    (list create-constants-table (list (parse-opt ''#(1 (1 2 3) #t #f))) 
+      (list (list (void) 1) '(() 2) '(#t 3) '(#f 5) '(1 7) '(2 9) '(3 11) '((3) 13) 
+			     '((2 3) 16) '((1 2 3) 19) '(#(1 (1 2 3) #t #f) 22))) 
+			     
+    (list create-constants-table (list (parse-opt ''#(1 (1 2 3) #t #f #(#\a 1 -1 "StR1")))) 
+      (list (list (void) 1) '(() 2) '(#t 3) '(#f 5) '(1 7) '(2 9) '(3 11) '((3) 13) '((2 3) 16) '((1 2 3) 19) 
+	'(#\a 22) '(-1 24) '("StR1" 26) '(#(#\a 1 -1 "StR1") 32) '(#(1 (1 2 3) #t #f #(#\a 1 -1 "StR1")) 35))) 			     
 ))
 
 (display (format "\033[1mComp171 - Compiler Unit Tests\033[0m\n================================\n"))
@@ -53,5 +107,5 @@
 (runAllTests
   (list  
       (cons "create-sub-constants" create-sub-constants-tests)           
-
+      (cons "create-constants-table" create-constants-table-tests)         
 ))
