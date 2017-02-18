@@ -875,7 +875,8 @@
     ;(cons "(box 5)" "5")
     ;(cons "'(asaf lior a b c)" "(asaf . (lior .()))")
     ;(cons "5\n6\n7\n'a\n'(a b c)" "5\n6\n7\na\n(a . (b . (c . ())))\n")
-    (cons "'(a 1 (if #f #f))" "")
+    ;(cons "'(a 1 (if #f #f))" "")
+    (cons "(box 5)" "")
 ))
 
 (load "CompilerTests/comp161-torture-if-test.scm")
