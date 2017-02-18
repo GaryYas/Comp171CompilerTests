@@ -65,6 +65,14 @@
     (list create-constants-table (list (parse-opt ''())) 
       (list (list (void) 1) '(() 2) '(#t 3) '(#f 5)))  
       
+    ;; Sybmol  
+    (list create-constants-table (list (parse-opt '('a 'b "b" "a"))) 
+      (list (list (void) 1) '(() 2) '(#t 3) '(#f 5) '("a" 7) '(a 10) '("b" 12) '(b 15)))   
+      
+    ;; String
+    (list create-constants-table (list (parse-opt '("a" "b" "c"))) 
+      (list (list (void) 1) '(() 2) '(#t 3) '(#f 5) '("a" 7) '("b" 10) '("c" 13))) 
+      
     ;; Empty vec
     (list create-constants-table (list (parse-opt ''#()))
       (list (list (void) 1) '(() 2) '(#t 3) '(#f 5) '(#() 7)))
@@ -99,13 +107,32 @@
 			     
     (list create-constants-table (list (parse-opt ''#(1 (1 2 3) #t #f #(#\a 1 -1 "StR1")))) 
       (list (list (void) 1) '(() 2) '(#t 3) '(#f 5) '(1 7) '(2 9) '(3 11) '((3) 13) '((2 3) 16) '((1 2 3) 19) 
-	'(#\a 22) '(-1 24) '("StR1" 26) '(#(#\a 1 -1 "StR1") 32) '(#(1 (1 2 3) #t #f #(#\a 1 -1 "StR1")) 35))) 			     
+	'(#\a 22) '(-1 24) '("StR1" 26) '(#(#\a 1 -1 "StR1") 32) '(#(1 (1 2 3) #t #f #(#\a 1 -1 "StR1")) 38))) 			     
 ))
+
+(define create-fvar-table-tests
+  (list
+     (list create-fvar-table (list (parse-opt '(x x y z)) 1) '((x 1) (y 2) (z 3)))
+     (list create-fvar-table (list (parse-opt '(x x y z)) 100) '((x 100) (y 101) (z 102)))
+     
+     (list create-fvar-table (list (parse-opt '((lambda (x y z) (a b c)) 1 2 3)) 2) '((a 2) (b 3) (c 4)))
+     
+     (list create-fvar-table (list (parse-opt '((lambda (x y z) (lambda (d e f) (a b c))) 1 2 3)) 2) '((a 2) (b 3) (c 4)))
+))
+
+(define constant-symbols-tests
+  (list
+     (list constant-symbols (list '((-12/34 58) ("x" 15) (x 1) (1 5) (#\a 7))
+     '((-12/34 58) ("x" 15) (x 1) (1 5) (#\a 7))) '(("x" 15)))
+))
+
 
 (display (format "\033[1mComp171 - Compiler Unit Tests\033[0m\n================================\n"))
 
 (runAllTests
   (list  
-      (cons "create-sub-constants" create-sub-constants-tests)           
-      (cons "create-constants-table" create-constants-table-tests)         
+      ;(cons "create-sub-constants" create-sub-constants-tests)           
+      ;(cons "create-constants-table" create-constants-table-tests)    
+      (cons "constant-symbols" constant-symbols-tests) 
+      ;(cons "create-fvar-table" create-fvar-table-tests) 
 ))
