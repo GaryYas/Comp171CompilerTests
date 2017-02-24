@@ -184,7 +184,7 @@
     
     ;;Sybmols
     (cons "'a" "a\n")
-    (cons "'AsAF" "AsAF\n")
+    (cons "'AsAF" "asaf\n")
     (cons "'this-is-a-symbol12345" "this-is-a-symbol12345\n")
     
     ;;Boolean
@@ -244,7 +244,7 @@
     (cons "((lambda () #t))" "#t\n")
     (cons "((lambda () -1/2))" "-1/2\n")
     (cons "((lambda () '(1 2 3 4 5 6)))" "(1 . (2 . (3 . (4 . (5 . (6 . ()))))))\n")
-    (cons "((lambda () #(1 2 3)))" "#3(1 2 3)\n")
+    (cons "((lambda () '#(1 2 3)))" "#3(1 2 3)\n")
     (cons "((lambda () \"abCdE123\"))" "\"abCdE123\"\n")
     (cons "((lambda (x) x) 5)" "5\n")
     (cons "((lambda (a) a) #t)" "#t\n")
@@ -697,9 +697,9 @@
     (cons "((lambda x ((lambda y x))))" "()\n")
     (cons "((lambda x ((lambda y y))))" "()\n")
     (cons "((lambda x ((lambda y y))) 1 2 3 4 5 #\\a 7 8 9 0 100)" "()\n")
-    (cons "((lambda x ((lambda y x))) 1 2 3 4 5 #(1 2 3))" 
+    (cons "((lambda x ((lambda y x))) 1 2 3 4 5 '#(1 2 3))" 
 	  "(1 . (2 . (3 . (4 . (5 . (#3(1 2 3) . ()))))))\n")
-    (cons "((lambda x ((lambda y y) #t #f \"AbC123\")) 1 2 3 4 5 #(1 2 3))" 
+    (cons "((lambda x ((lambda y y) #t #f \"AbC123\")) 1 2 3 4 5 '#(1 2 3))" 
 	  "(#t . (#f . (\"AbC123\" . ())))\n")
 
     ;; Lambda-var in Lambda-simple
@@ -717,13 +717,13 @@
     (cons "((lambda (a . b) ((lambda x x) \"Akuna\")) -12/36 98)" "(\"Akuna\" . ())\n")
     (cons "((lambda (a b . c) ((lambda x x) \"Akuna\" \"Matata\")) -12/36 #t)" 
 	  "(\"Akuna\" . (\"Matata\" . ()))\n")
-    (cons "((lambda (a b c . d) ((lambda x a) \"Akuna\" \"Matata\")) -12/36 #\\a #())" 
+    (cons "((lambda (a b c . d) ((lambda x a) \"Akuna\" \"Matata\")) -12/36 #\\a '#())" 
 	  "-1/3\n")
-    (cons "((lambda (a b c . d) ((lambda x d) \"Akuna\" \"Matata\")) -12/36 #\\a #())" 
+    (cons "((lambda (a b c . d) ((lambda x d) \"Akuna\" \"Matata\")) -12/36 #\\a '#())" 
 	  "()\n")
 	  
     (cons "((lambda x x) 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20
-			  #(1 2 3 4 5 6 7 8 9 #t #f)
+			  '#(1 2 3 4 5 6 7 8 9 #t #f)
 			  '(1 2 3 4 5 6 7 8 9 -12/35))" 
 			  "(1 . (2 . (3 . (4 . (5 . (6 . (7 . (8 . (9 . (10 . (11 . (12 . (13 . (14 . (15 . (16 . (17 . (18 . (19 . (20 . (#11(1 2 3 4 5 6 7 8 9 #t #f) . ((1 . (2 . (3 . (4 . (5 . (6 . (7 . (8 . (9 . (-12/35 . ())))))))))) . ()))))))))))))))))))))))\n")
 
@@ -866,17 +866,311 @@
     (cons "(define not (lambda (x) (if x #f #t))) (not #f)" "#t\n")
 ))
 
+(define primitive-functions-tests
+  (list
+    ; car, cdr and combinations
+    (cons "(car '(a b))" "a\n")
+    (cons "(cdr '(a b))" "(b . ())\n")
+    (cons "(caaaar '((((a))) b))" "a\n")
+    (cons "(cdadr '((((a))) (((b) c)) (((c))) (((d)))))" "()\n")
+    (cons "(cdaadr '((((a))) (((b e) c)) (((c))) (((d)))))" "(c . ())\n")
+    
+    ;list
+    (cons "(list)" "()\n")
+    (cons "(list 1 2 3 #t 'a)" "(1 . (2 . (3 . (#t . (a . ())))))\n")
+    (cons "(list (if #f #f))" "(#<void> . ())\n")
+    (cons "(list 'a 1 'b (if #f #f))" "(a . (1 . (b . (#<void> . ()))))\n")
+    
+    ;not
+    (cons "(not 1)" "#f\n")
+    (cons "(not #f)" "#t\n")
+    
+    ;apply
+    (cons "(apply car '((a)))" "a\n")
+    (cons "(apply (lambda (x y z) (list x y z)) '(1 2 3))" "(1 . (2 . (3 . ())))\n")
+    
+    ;cons
+    (cons "(cons 1 2)" "(1 . 2)\n")
+    (cons "(cons 1 (cons 2 (cons 3 '())))" "(1 . (2 . (3 . ())))\n")
+    
+    ;null?
+    (cons "(null? '())" "#t\n")
+    (cons "(null? (list))" "#t\n")
+    (cons "(null? (list 1))" "#f\n")
+    (cons "(null? '(1 2 3 a))" "#f\n")
+
+    ;map
+    (cons "(map (lambda (x) x) '(1 2 3))" "(1 . (2 . (3 . ())))\n")
+    (cons "(map car '((1) (2) (3)))" "(1 . (2 . (3 . ())))\n")
+    (cons "(map caar '(((1)) ((2)) ((3))))" "(1 . (2 . (3 . ())))\n")
+    (cons "(map cdr (list))" "()\n")
+    (cons "(map (lambda (x y) (cons x y)) '(1 2) '(3 4))" "((1 . 3) . ((2 . 4) . ()))\n")
+    (cons "(map list '(1 2) '(3 4) '(5 6) '(7 8) '(9 10))" "((1 . (3 . (5 . (7 . (9 . ()))))) . ((2 . (4 . (6 . (8 . (10 . ()))))) . ()))\n")
+
+    ;append
+    (cons "(append '(1 2) '(3 4 5))" "(1 . (2 . (3 . (4 . (5 . ())))))\n")
+    (cons "(append '(1 2) '())" "(1 . (2 . ()))\n")
+    (cons "(append '(1) '(2))" "(1 . (2 . ()))\n")
+    (cons "(append '() '(1 2))" "(1 . (2 . ()))\n")
+    (cons "(append)" "()\n")
+    (cons "(append '(1 2 3) '(4) '(5 6) '(#t a b c) '())" 
+	  "(1 . (2 . (3 . (4 . (5 . (6 . (#t . (a . (b . (c . ()))))))))))\n")
+	
+    ;boolean?
+    (cons "(boolean? #t)" "#t\n")
+    (cons "(boolean? #f)" "#t\n")
+    (cons "(boolean? #\\a)" "#f\n")
+    (cons "(boolean? 1)" "#f\n")
+    (cons "(boolean? \"AbC\")" "#f\n")
+    (cons "(boolean? '(#t))" "#f\n")
+    
+    ;char?
+    (cons "(char? #t)" "#f\n")
+    (cons "(char? #f)" "#f\n")
+    (cons "(char? #\\a)" "#t\n")
+    (cons "(char? #\\B)" "#t\n")
+    (cons "(char? #\\space)" "#t\n")
+    (cons "(char? 1)" "#f\n")
+    (cons "(char? \"AbC\")" "#f\n")
+    (cons "(char? '(#t))" "#f\n")
+    
+    ;integer?
+    (cons "(integer? #t)" "#f\n")
+    (cons "(integer? #f)" "#f\n")
+    (cons "(integer? #\\a)" "#f\n")
+    (cons "(integer? 1)" "#t\n")
+    (cons "(integer? -52)" "#t\n")
+    (cons "(integer? -48/36)" "#f\n")
+    (cons "(integer? 1/12)" "#f\n")
+    (cons "(integer? '(1/12))" "#f\n")
+    (cons "(integer? \"AbC\")" "#f\n")
+    (cons "(integer? '(#t))" "#f\n")
+    
+    ;pair?
+    (cons "(pair? 1)" "#f\n")
+    (cons "(pair? (cons 1 2))" "#t\n")
+    (cons "(pair? '(1 2 3))" "#t\n")
+    (cons "(pair? (list 1 2))" "#t\n")
+    (cons "(pair? #t)" "#f\n")
+    
+    ;number?
+    (cons "(number? 1)" "#t\n")
+    (cons "(number? -58)" "#t\n")
+    (cons "(number? 2/12)" "#t\n")
+    (cons "(number? -3/14)" "#t\n")
+    (cons "(number? 'a)" "#f\n")
+    (cons "(number? #t)" "#f\n")
+    (cons "(number? '(1))" "#f\n")
+    (cons "(number? '#(1))" "#f\n")
+
+    ;rational?
+    (cons "(rational? 1)" "#t\n")
+    (cons "(rational? -58)" "#t\n")
+    (cons "(rational? 2/12)" "#t\n")
+    (cons "(rational? -3/14)" "#t\n")
+    (cons "(rational? 'a)" "#f\n")
+    (cons "(rational? #t)" "#f\n")
+    (cons "(rational? '(1))" "#f\n")
+    (cons "(rational? '#(1))" "#f\n") 
+    
+    ;char->integer
+    (cons "(char->integer #\\a)" "97\n")
+    (cons "(char->integer #\\A)" "65\n")
+    (cons "(char->integer #\\space)" "32\n")
+    
+    ;integer->char
+    (cons "(integer->char 97)" "#\\a\n")
+    (cons "(integer->char 65)" "#\\A\n")
+    (cons "(integer->char 32)" "#\\space\n")
+    
+    ;string-length
+    (cons "(string-length \"abcde123\")" "8\n")
+    (cons "(string-length \"this-is a STRING !\")" "18\n")
+    (cons "(string-length \"\")" "0\n")
+    
+    ;denominator
+    (cons "(denominator 1)" "1\n")
+    (cons "(denominator -54)" "1\n")
+    (cons "(denominator 1/2)" "2\n")
+    (cons "(denominator -1/45)" "45\n")
+    (cons "(denominator -12/2)" "1\n")
+    (cons "(denominator -15/10)" "2\n")
+    
+    ;numerator
+    (cons "(numerator 1)" "1\n")
+    (cons "(numerator -54)" "-54\n")
+    (cons "(numerator 1/2)" "1\n")
+    (cons "(numerator -1/45)" "-1\n")
+    (cons "(numerator -12/2)" "-6\n")
+    (cons "(numerator -15/10)" "-3\n")
+    
+    ;make-string
+    (cons "(make-string 1 #\\a)" "\"a\"\n")
+    (cons "(make-string 5 #\\A)" "\"AAAAA\"\n")
+    (cons "(make-string 0 #\\space)" "\"\"\n")
+    
+    ;make-vector
+    (cons "(make-vector 1 #\\a)" "#1(#\\a)\n")
+    (cons "(make-vector 5 #\\A)" "#5(#\\A #\\A #\\A #\\A #\\A)\n")
+    (cons "(make-vector 0 #\\space)" "#0()\n") 
+    (cons "(make-vector 0 #\\Z)" "#0()\n") 
+    (cons "(make-vector 12 #t)" "#12(#t #t #t #t #t #t #t #t #t #t #t #t)\n")  
+    (cons "(make-vector 4 -6/8)" "#4(-3/4 -3/4 -3/4 -3/4)\n")  
+    
+    ;procedure?
+    (cons "(procedure? 1)" "#f\n")
+    (cons "(procedure? 1)" "#f\n")
+    (cons "(procedure? (lambda (x) x))" "#t\n")
+    (cons "(define f (lambda x x)) (procedure? f)" "#t\n")
+    (cons "(define f (lambda (a b . c) c)) (procedure? f)" "#t\n")
+    
+    ;vector-length
+    (cons "(vector-length '#())" "0\n")
+    (cons "(vector-length '#(1))" "1\n")
+    (cons "(vector-length '#(1 2 3))" "3\n")
+    (cons "(vector-length '#(1 2 3 #t #f 6/8))" "6\n")
+    (cons "(vector-length '#(1 2 3 #t #f 6/8 (#\\a #\\b #\\C \"StR\")))" "7\n")
+    
+    ;string?
+    (cons "(string? 1)" "#f\n")
+    (cons "(string? \"\")" "#t\n")
+    (cons "(string? #\\a)" "#f\n")
+    (cons "(string? \"this is A STRING!\")" "#t\n")
+    (cons "(string? (make-string 20 #\\Y))" "#t\n")
+    
+    ;symbol?
+    (cons "(symbol? 'a)" "#t\n")
+    (cons "(symbol? 'this-is-a-symbol)" "#t\n")
+    (cons "(symbol? #t)" "#f\n")
+    (cons "(symbol? \"Str\")" "#f\n")
+    (cons "(symbol? 1)" "#f\n")
+    (cons "(symbol? #\\c)" "#f\n")
+    
+    ;vector?
+    (cons "(vector? '#())" "#t\n")
+    (cons "(vector? '(1))" "#f\n")
+    (cons "(vector? #t)" "#f\n")
+    (cons "(vector? 'symbol1)" "#f\n")
+    (cons "(vector? (make-vector 1 2))" "#t\n")
+    (cons "(vector? (make-vector 100 #t))" "#t\n")
+    (cons "(vector? '#(1))" "#t\n")
+    (cons "(vector? '#(1 2 3))" "#t\n")
+    (cons "(vector? '#(1 2 3 #t #f 6/8))" "#t\n")
+    (cons "(vector? '#(1 2 3 #t #f 6/8 (#\\a #\\b #\\C \"StR\")))" "#t\n")
+    
+    ;zero?
+    (cons "(zero? 1)" "#f\n")
+    (cons "(zero? 0)" "#t\n")
+    (cons "(zero? 0/5)" "#t\n")
+    (cons "(zero? -0/12)" "#t\n")
+    (cons "(zero? 2/13)" "#f\n")
+    (cons "(zero? -0)" "#t\n")
+    
+    ;vector
+    (cons "(vector)" "#0()\n")
+    (cons "(vector 1)" "#1(1)\n")
+    (cons "(vector #\\a #\\A #\\space)" "#3(#\\a #\\A #\\space)\n")
+    (cons "(vector 1 2 3 #t #f -1/2 \"a\" #\\b)" "#8(1 2 3 #t #f -1/2 \"a\" #\\b)\n")
+  
+    ;string-ref
+    (cons "(string-ref \"ABcD1234\" 0)" "#\\A\n")
+    (cons "(string-ref \"ABcD1234\" 1)" "#\\B\n")
+    (cons "(string-ref \"ABcD1234\" 2)" "#\\c\n")
+    (cons "(string-ref \"ABcD1234\" 3)" "#\\D\n")
+    (cons "(string-ref \"ABcD1234\" 4)" "#\\1\n")
+    (cons "(string-ref \"ABcD1234\" 5)" "#\\2\n")
+    (cons "(string-ref \"ABcD1234\" 6)" "#\\3\n")
+    (cons "(string-ref \"ABcD1234\" 7)" "#\\4\n")
+    
+    ;vector-ref
+    (cons "(vector-ref '#(\"ABC\" 1 #t 2 #f 3 (a)) 0)" "\"ABC\"\n")
+    (cons "(vector-ref '#(\"ABC\" 1 #t 2 #f 3 (a)) 1)" "1\n")
+    (cons "(vector-ref '#(\"ABC\" 1 #t 2 #f 3 (a)) 2)" "#t\n")
+    (cons "(vector-ref '#(\"ABC\" 1 #t 2 #f 3 (a)) 3)" "2\n")
+    (cons "(vector-ref '#(\"ABC\" 1 #t 2 #f 3 (a)) 4)" "#f\n")
+    (cons "(vector-ref '#(\"ABC\" 1 #t 2 #f 3 (a)) 5)" "3\n")
+    (cons "(vector-ref '#(\"ABC\" 1 #t 2 #f 3 (a)) 6)" "(a . ())\n")
+    
+    ;+
+    (cons "(+ 3/2 3/2)" "3\n")
+    (cons "(+ -3/2 -3/2)" "-3\n")    
+    (cons "(+ 1/2 2)" "5/2\n")
+    (cons "(+ 1 -1/2)" "1/2\n")
+    (cons "(+ 1 -1/2 -1/2)" "0\n")
+    (cons "(+ 11 12)" "23\n")
+    (cons "(+ 11 -12)" "-1\n")
+    (cons "(+ 10/10 -120/110)" "-1/11\n")
+    (cons "(+ 1 2 3 -1/2 -3/4 -5/6 -7/8 9 12/5)" "1733/120\n")
+    (cons "(+)" "0\n")
+    
+    ;-
+    (cons "(- 5)" "-5\n")
+    (cons "(- 5 6 7)" "-8\n")
+    (cons "(- 5/6 6/7 7/8 9)" "-1663/168\n")   
+    
+))
+
+(define internal-helper-procedures-tests
+  (list
+    ;one-list-map
+    (cons "(one-list-map (lambda (x) x) '(1 2 3))" "(1 . (2 . (3 . ())))\n")
+    (cons "(one-list-map car '((1) (2) (3)))" "(1 . (2 . (3 . ())))\n")
+    (cons "(one-list-map caar '(((1)) ((2)) ((3))))" "(1 . (2 . (3 . ())))\n")
+    (cons "(one-list-map cdr (list))" "()\n")
+    
+    ;foldr
+    (cons "(foldr cons '() '(1 2 3))" "(1 . (2 . (3 . ())))\n")
+    
+    ;binary-append
+    (cons "(binary-append '(1 2) '(3 4 5))" "(1 . (2 . (3 . (4 . (5 . ())))))\n")
+    (cons "(binary-append '(1 2) '())" "(1 . (2 . ()))\n")
+    (cons "(binary-append '(1) '(2))" "(1 . (2 . ()))\n")
+    (cons "(binary-append '() '(1 2))" "(1 . (2 . ()))\n")
+    
+    ;list-to-vector - helper procedure
+    (cons "(list-to-vector '())" "#0()\n")
+    (cons "(list-to-vector '(1))" "#1(1)\n")
+    (cons "(list-to-vector (list 1 2 3 #t #f -1/2 \"a\" #\\b))" "#8(1 2 3 #t #f -1/2 \"a\" #\\b)\n")
+   
+    
+    ;box-get box-set box
+    (cons "((lambda (x) (box-get x)) (box 5))" "5\n")
+    (cons "((lambda (y) ((lambda (x) (box-get y)) 5)) (box '(a b c)))" "(a . (b . (c . ())))\n")
+    (cons "((lambda (y) ((lambda (x) (begin (box-set y 12) (box-get y))) 5)) (box '(a b c)))" "12\n")
+    (cons "((lambda (x) (begin (box-set x \"AbC\") (box-get x))) (box 5))" "\"AbC\"\n")
+    (cons "((lambda (y) ((lambda (x) (set! x (box x)) (box-get x)) 1)) (box '(a b c)))" "1\n")
+    (cons
+	  "(define *example*
+	    (let ((a 0))
+	      (begin (lambda () a)
+	      (lambda () (set! a (+ a 1)))
+	      ((lambda (b) (set! a b) a) a)))) *example*" "0\n")
+	      
+    ;+
+    (cons "(reduce-frac 10/2)" "5\n")
+    (cons "(binary-int-frac-plus 3 5/3)" "14/3\n")
+    (cons "(binary-int-int-plus 3 24)" "27\n")
+    (cons "(binary-frac-frac-plus 3/2 3/2)" "12/4\n")
+    (cons "(binary-frac-frac-plus -3/2 -3/2)" "-12/4\n") 
+    (cons "(reduce-frac 1/2)" "1/2\n")
+    (cons "(inverse-num 1)" "-1\n")
+    (cons "(inverse-num 1/2)" "-1/2\n")
+    
+    ;*
+    (cons "(binary-int-int-mul 1 2)" "2\n")
+    (cons "(binary-int-int-mul -3 12)" "-36\n")
+    (cons "(binary-int-int-mul 5 0)" "0\n")
+    (cons "(binary-int-frac-mul 2 1/2)" "2/2\n")
+    (cons "(reduce-frac (binary-int-frac-mul 2 1/2))" "1\n")
+    (cons "(reduce-frac (binary-int-frac-mul 12 4/6))" "8\n")
+    (cons "(reduce-frac (binary-int-frac-mul 5 2/4))" "5/2\n")
+    (cons "(binary-frac-frac-mul 1/3 3/2)" "3/6\n")
+    (cons "(reduce-frac (binary-frac-frac-mul 1/3 3/2))" "1/2\n")        
+))
+
 ;;; Tests list for debugging purposes
 (define tests
   (list
-    ;(cons "((lambda (x) ((lambda (y) y) 7)) 5)" "7")
-    ;(cons "((lambda (x) ((lambda (y) ((lambda (z) z) 1)) 5)) 6)" "1")
-    ;(cons "((lambda (y) y) 7)" "7")
-    ;(cons "(box 5)" "5")
-    ;(cons "'(asaf lior a b c)" "(asaf . (lior .()))")
-    ;(cons "5\n6\n7\n'a\n'(a b c)" "5\n6\n7\na\n(a . (b . (c . ())))\n")
-    ;(cons "'(a 1 (if #f #f))" "")
-    (cons "(box 5)" "")
 ))
 
 (load "CompilerTests/comp161-torture-if-test.scm")
@@ -897,6 +1191,8 @@
       (cons "Set" set-tests)
       (cons "pvar-bvar" pvar-bvar-tests)
       (cons "Define" define-tests)
+      (cons "Primitive Functions" primitive-functions-tests)
+      ;(cons "Internal Helper Procedures" internal-helper-procedures-tests)
       ;(cons "Debugging" tests)  
       
 ))
