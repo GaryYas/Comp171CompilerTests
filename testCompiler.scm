@@ -1274,7 +1274,7 @@
       (cons "pvar-bvar" pvar-bvar-tests)
       (cons "Define" define-tests)
       (cons "Primitive Functions" primitive-functions-tests)
-      (cons "Internal Helper Procedures" internal-helper-procedures-tests)
+      ;(cons "Internal Helper Procedures" internal-helper-procedures-tests)
       ;(cons "Debugging" tests)  
       
 ))
