@@ -213,6 +213,7 @@
 
 (define or-if-begin-tests
 (list
+    (cons "(or)" "#f\n")
     (cons "(or #t)" "#t\n")
     (cons "(or #f)" "#f\n")
     (cons "(or (or #f #f) (or #t))" "#t\n")
@@ -1102,12 +1103,64 @@
     (cons "(+ 10/10 -120/110)" "-1/11\n")
     (cons "(+ 1 2 3 -1/2 -3/4 -5/6 -7/8 9 12/5)" "1733/120\n")
     (cons "(+)" "0\n")
+    (cons "(+ -5/6)" "-5/6\n")
     
     ;-
     (cons "(- 5)" "-5\n")
     (cons "(- 5 6 7)" "-8\n")
-    (cons "(- 5/6 6/7 7/8 9)" "-1663/168\n")   
+    (cons "(- 5/6 6/7 7/8 9)" "-1663/168\n")
     
+    ;*
+    (cons "(*)" "1\n")
+    (cons "(* -2/3)" "-2/3\n")
+    (cons "(* -2/3 5/6 1 2 3)" "-10/3\n")
+    (cons "(* -2/3 5/6 1 2 3 0)" "0\n")
+    
+    ;/
+    (cons "(/ 2)" "1/2\n")
+    (cons "(/ -2)" "-1/2\n")
+    (cons "(/ -2/3)" "-3/2\n")
+    (cons "(/ -2/4)" "-2\n")
+    (cons "(/ 1 2 3)" "1/6\n")
+    (cons "(/ -2/3 4/5 1 2 12/13)" "-65/144\n")
+    (cons "(/ -2/3 4/5 1 2 -12/13)" "65/144\n")
+    (cons "(/ 1/2 1/4)" "2\n")
+    (cons "(/ 1/2 -1/4)" "-2\n")
+    (cons "(/ -1/2 1/4)" "-2\n")
+    (cons "(/ -1/2 -1/4)" "2\n")
+    
+    (cons "(> 0)" "#t\n")
+    (cons "(> 100)" "#t\n")
+    (cons "(> 2/3)" "#t\n")
+    (cons "(> 2 -1)" "#t\n")
+    (cons "(> 2 -1 -1/2)" "#f\n")
+    (cons "(> 2 -1 1/2)" "#f\n")
+    (cons "(> 5 4 2 3)" "#f\n")
+    (cons "(> 5 4 3 2 5/4 1 1/2 0 -1/2 -1)" "#t\n")
+    (cons "(> 3/4 1/2)" "#t\n")
+    (cons "(> 5/4 1)" "#t\n")
+    (cons "(> 1 5/4)" "#f\n")
+    (cons "(> 2 5/4)" "#t\n")
+    
+    (cons "(< -1/2)" "#t\n")
+    (cons "(< 1 -1/2)" "#f\n")
+    (cons "(< -1 -1/2)" "#t\n")
+    (cons "(< -1 -1/2 -2)" "#f\n")
+    (cons "(< 1/2 3/4)" "#t\n")
+    (cons "(< 3/4 1/2)" "#f\n")
+    (cons "(< -1 -1/2 0 1 3/2 2 5/2 3 7/2 4 100)" "#t\n")
+    (cons "(< -5 -4 -3/2 0 1 2 3 4 9/2 10/2 11/2 12/2 13/2 12)" "#t\n")
+    (cons "(< -5 -4 -3/2 0 1 2 3 4 9/2 10/2 11/2 12/2 13/2 -1/2 12)" "#f\n")
+    (cons "(< -1 -1/2 0 1 3/2 2 5/2 3 7/2 -5 100)" "#f\n")
+    (cons "(< 1 -1/2 0 1 3/2 2 5/2 3 7/2 -5 100)" "#f\n")
+    
+    (cons "(= 1/2)" "#t\n")
+    (cons "(= 1 1 1 1 1 1 1 2/2 4/4 1 1)" "#t\n")
+    (cons "(= 1 1 1 1 1 1 1 2/2 -4/4 1 1)" "#f\n")
+    (cons "(= 2/4 1/2 1/2 1/2)" "#t\n")
+    (cons "(= -2/4 -1/2 -1/2 -1/2)" "#t\n")
+    (cons "(= -2/4 1/2 -1/2 -1/2)" "#f\n")
+    (cons "(= 1 2 3 4 5 6)" "#f\n")
 ))
 
 (define internal-helper-procedures-tests
@@ -1153,8 +1206,8 @@
     (cons "(binary-frac-frac-plus 3/2 3/2)" "12/4\n")
     (cons "(binary-frac-frac-plus -3/2 -3/2)" "-12/4\n") 
     (cons "(reduce-frac 1/2)" "1/2\n")
-    (cons "(inverse-num 1)" "-1\n")
-    (cons "(inverse-num 1/2)" "-1/2\n")
+    (cons "(opposite-num 1)" "-1\n")
+    (cons "(opposite-num 1/2)" "-1/2\n")
     
     ;*
     (cons "(binary-int-int-mul 1 2)" "2\n")
@@ -1165,12 +1218,41 @@
     (cons "(reduce-frac (binary-int-frac-mul 12 4/6))" "8\n")
     (cons "(reduce-frac (binary-int-frac-mul 5 2/4))" "5/2\n")
     (cons "(binary-frac-frac-mul 1/3 3/2)" "3/6\n")
-    (cons "(reduce-frac (binary-frac-frac-mul 1/3 3/2))" "1/2\n")        
+    (cons "(reduce-frac (binary-frac-frac-mul 1/3 3/2))" "1/2\n")
+    (cons "(reduce-frac (binary-frac-frac-mul -2/3 3/2))" "-1\n")
+    
+    (cons "(inverse-num -2)" "-1/2\n")
+    (cons "(inverse-num 2/3)" "3/2\n")
+    (cons "(inverse-num -2/3)" "-3/2\n")
+    
+    (cons "(greater-than-int-int 1 2)" "#f\n")
+    (cons "(greater-than-int-int 3 -2)" "#t\n")
+    
+    (cons "(binary-gt 2 -1)" "#t\n")
+    (cons "(binary-gt 3/4 1/2)" "#t\n")
+    (cons "(binary-gt 5/4 1)" "#t\n")
+    (cons "(binary-gt 1 5/4)" "#f\n")
+    (cons "(binary-gt 2 5/4)" "#t\n")
+    
+    (cons "(binary-lt 1 2)" "#t\n")
+    (cons "(binary-lt 1 -1/2)" "#f\n")
+    (cons "(binary-lt -1 -1/2)" "#t\n")
+    (cons "(binary-lt -1/2 -3/4)" "#f\n")
+    (cons "(binary-lt 1/2 3/4)" "#t\n")
+    (cons "(binary-lt 3/4 1/2)" "#f\n")
+    
+    (cons "(binary-eq 1 1)" "#t\n")
+    (cons "(binary-eq 1 2)" "#f\n")
+    (cons "(binary-eq 1/2 1/4)" "#f\n")
+    (cons "(binary-eq 1/2 2/4)" "#t\n")
+    (cons "(binary-eq 2 4/2)" "#t\n")
+    (cons "(binary-eq -1 -1)" "#t\n")
 ))
 
 ;;; Tests list for debugging purposes
 (define tests
-  (list
+  (list    
+
 ))
 
 (load "CompilerTests/comp161-torture-if-test.scm")
@@ -1192,7 +1274,7 @@
       (cons "pvar-bvar" pvar-bvar-tests)
       (cons "Define" define-tests)
       (cons "Primitive Functions" primitive-functions-tests)
-      ;(cons "Internal Helper Procedures" internal-helper-procedures-tests)
+      (cons "Internal Helper Procedures" internal-helper-procedures-tests)
       ;(cons "Debugging" tests)  
       
 ))
