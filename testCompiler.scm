@@ -916,6 +916,47 @@
     (cons "(append)" "()\n")
     (cons "(append '(1 2 3) '(4) '(5 6) '(#t a b c) '())" 
 	  "(1 . (2 . (3 . (4 . (5 . (6 . (#t . (a . (b . (c . ()))))))))))\n")
+    (cons
+      "(define x '(1 2))
+       (define y '(3 4))
+       (define z '(5 6))
+       (define f (append x y z))
+       f" "(1 . (2 . (3 . (4 . (5 . (6 . ()))))))\n")
+    (cons
+      "(define x '(1 2))
+       (define y '(3 4))
+       (define z '(5 6))
+       (define f (append x y z))
+       (set-car! x 'a)
+       f" "(1 . (2 . (3 . (4 . (5 . (6 . ()))))))\n") 
+    (cons
+      "(define x '(1 2))
+       (define y '(3 4))
+       (define z '(5 6))
+       (define f (append x y z))
+       (set-car! x 'a)
+       (set-car! y 'b)
+       f" "(1 . (2 . (3 . (4 . (5 . (6 . ()))))))\n") 
+    (cons
+      "(define x '(1 2))
+       (define y '(3 4))
+       (define z '(5 6))
+       (define f (append x y z))
+       (set-car! x 'a)
+       (set-car! y 'b)
+       (set-car! z 'c)
+       f" "(1 . (2 . (3 . (4 . (c . (6 . ()))))))\n")     
+    (cons "(append '(a b) 'c)" "(a . (b . c))\n")
+    (cons "(append '(1 2) '(3 4))" "(1 . (2 . (3 . (4 . ()))))\n")
+    (cons "(append '(1 2) 3)" "(1 . (2 . 3))\n")
+    (cons "(append '(a b) '(#t #f) 'e)" "(a . (b . (#t . (#f . e))))\n")
+    (cons "(define x '(5)) 
+	   (define y (append '(a b) '(#t #f) '(1 2 3 4) '(5 6 7) '(8 9 -1/2) x))
+	   y
+	   (set-car! x #t)
+	   y" 
+	 "(a . (b . (#t . (#f . (1 . (2 . (3 . (4 . (5 . (6 . (7 . (8 . (9 . (-1/2 . (5 . ())))))))))))))))
+(a . (b . (#t . (#f . (1 . (2 . (3 . (4 . (5 . (6 . (7 . (8 . (9 . (-1/2 . (#t . ())))))))))))))))\n")    
 	
     ;boolean?
     (cons "(boolean? #t)" "#t\n")
@@ -983,6 +1024,7 @@
     (cons "(integer->char 97)" "#\\a\n")
     (cons "(integer->char 65)" "#\\A\n")
     (cons "(integer->char 32)" "#\\space\n")
+    (cons "(integer->char 2)" "#\\002\n")
     
     ;string-length
     (cons "(string-length \"abcde123\")" "8\n")
@@ -1129,6 +1171,7 @@
     (cons "(/ -1/2 1/4)" "-2\n")
     (cons "(/ -1/2 -1/4)" "2\n")
     
+    ;>
     (cons "(> 0)" "#t\n")
     (cons "(> 100)" "#t\n")
     (cons "(> 2/3)" "#t\n")
@@ -1142,6 +1185,7 @@
     (cons "(> 1 5/4)" "#f\n")
     (cons "(> 2 5/4)" "#t\n")
     
+    ;<
     (cons "(< -1/2)" "#t\n")
     (cons "(< 1 -1/2)" "#f\n")
     (cons "(< -1 -1/2)" "#t\n")
@@ -1154,6 +1198,7 @@
     (cons "(< -1 -1/2 0 1 3/2 2 5/2 3 7/2 -5 100)" "#f\n")
     (cons "(< 1 -1/2 0 1 3/2 2 5/2 3 7/2 -5 100)" "#f\n")
     
+    ;=
     (cons "(= 1/2)" "#t\n")
     (cons "(= 1 1 1 1 1 1 1 2/2 4/4 1 1)" "#t\n")
     (cons "(= 1 1 1 1 1 1 1 2/2 -4/4 1 1)" "#f\n")
@@ -1161,6 +1206,83 @@
     (cons "(= -2/4 -1/2 -1/2 -1/2)" "#t\n")
     (cons "(= -2/4 1/2 -1/2 -1/2)" "#f\n")
     (cons "(= 1 2 3 4 5 6)" "#f\n")
+    
+    ;remainder
+    (cons "(remainder 2 1)" "0\n")
+    (cons "(remainder 2 10)" "2\n")
+    (cons "(remainder 10 2)" "0\n")
+    (cons "(remainder 10 3)" "1\n")
+    (cons "(remainder -10 3)" "-1\n")
+    (cons "(remainder -10 -3)" "-1\n")
+    (cons "(remainder 0 10)" "0\n")
+    (cons "(remainder -4 10)" "-4\n")
+    (cons "(remainder -4 -10)" "-4\n")
+    
+    ;string-set!
+    (cons "(string-set! \"ABC\" 0 #\\E)" "")
+    (cons "(define x \"ABC\") (string-set! x 0 #\\E) x" "\"EBC\"\n")
+    (cons "(define x \"ABC\") (string-set! x 1 #\\e) x" "\"AeC\"\n")
+    (cons "(define x \"ABC\") (string-set! x 2 #\\1) x" "\"AB1\"\n")
+    (cons 
+	"(let ((x \"A1bC2345cdefGh\"))
+	      (string-set! x 0 #\\Z)
+	      (string-set! x 5 #\\m)
+	      (string-set! x 10 #\\2)
+	      x)" "\"Z1bC2m45cd2fGh\"\n")
+	
+    ;vector-set!
+    (cons "(define x '#(1 2 3 4 a)) (vector-set! x 0 \"String\") x" 
+	  "#5(\"String\" 2 3 4 a)\n")
+    (cons "(define x '#(1 2 3 4 a)) (vector-set! x 1 #t) x" 
+	  "#5(1 #t 3 4 a)\n")	  
+    (cons "(define x '#(1 2 3 4 a)) (vector-set! x 2 #\\2) x" 
+	  "#5(1 2 #\\2 4 a)\n")
+    (cons "(define x '#(1 2 3 4 a)) (vector-set! x 3 '(1)) x" 
+	  "#5(1 2 3 (1 . ()) a)\n")
+    (cons "(define x '#(1 2 3 4 a)) (vector-set! x 4 '#(\"Akuna Matata\")) x" 
+	  "#5(1 2 3 4 #1(\"Akuna Matata\"))\n")
+    (cons 
+      "(let ((x (make-vector 3 'a)))
+	    (vector-set! x 0 1)
+	    (vector-set! x 1 -3/4)
+	    (vector-set! x 1 '(-5/6 12/36))
+	    (vector-set! x 2 -3/4)
+	    x)" "#3(1 (-5/6 . (1/3 . ())) -3/4)\n")
+	
+    ;set-car!
+    (cons "(define x '(a b)) (set-car! x 1) x" "(1 . (b . ()))\n")
+    (cons "(define x '(a . b)) (set-car! x 1) x" "(1 . b)\n")
+    (cons 
+      "(let ((x (cons #\\a 2)))
+	      (set-car! x -1/2)
+	      (set-car! x #f)
+	      x)" "(#f . 2)\n")	 
+
+    ;set-cdr!
+    (cons "(define x '(a . b)) (set-cdr! x 'c) x" "(a . c)\n")
+    (cons "(define x '(a #t #f 1 2 3)) (set-cdr! x \"ABC\") x" "(a . \"ABC\")\n")
+    (cons "(define x '(a #t #f 1 2 3)) (set-cdr! (cdr x) \"ABC\") x" "(a . (#t . \"ABC\"))\n")	      
+    
+    ;symbol->string
+    (cons "(symbol->string 'AbC)" "\"abc\"\n")
+    (cons "(symbol->string 'abcdefghijkl123456)" "\"abcdefghijkl123456\"\n")
+    
+    ;string->symbol
+    (cons "(begin 'a 'b 'c 'd 'e 'f 'g 'g234 'abc (string->symbol \"a\"))" "a\n")
+    (cons "(begin 'a 'b 'c 'd 'e 'f 'g 'g234 'abc (string->symbol \"b\"))" "b\n")
+    (cons "(begin 'a 'b 'c 'd 'e 'f 'g 'g234 'abc (string->symbol \"c\"))" "c\n")
+    (cons "(begin 'a 'b 'c 'D 'e 'f 'g 'g234 'abc (string->symbol \"D\"))" "D\n")
+    (cons "(begin 'a 'b 'c 'D 'e 'f 'g 'g234 'abc (string->symbol \"e\"))" "e\n")
+    (cons "(begin 'a 'b 'c 'D 'e 'f 'g 'g234 'abc (string->symbol \"f\"))" "f\n")
+    (cons "(begin 'a 'b 'c 'D 'e 'f 'g 'g234 'abc (string->symbol \"g\"))" "g\n")
+    (cons "(begin 'a 'b 'c 'D 'e 'f 'g 'g234 'abc (string->symbol \"g234\"))" "g234\n")
+    (cons "(begin 'a 'b 'c 'd 'e 'f 'g 'g234 'abc (string->symbol \"abc\"))" "abc\n")
+    (cons "(begin 'a 'b 'c 'd 'D 'e 'f 'g 'g234 'abc (string->symbol \"D\"))" "D\n")
+    (cons "(string->symbol (make-string 1 #\\d))" "d\n")
+    (cons "(begin 'a 'b 'c 'd 'D 'e 'f 'g 'g234 'abc (string->symbol (make-string 1 #\\d)))" "d\n")
+    (cons "(string->symbol \"abc\")" "abc\n")
+    (cons "(string->symbol \"aBc\")" "aBc\n")
+    (cons "(begin 'aBc (string->symbol \"aBc\"))" "aBc\n")
 ))
 
 (define internal-helper-procedures-tests
@@ -1200,12 +1322,12 @@
 	      ((lambda (b) (set! a b) a) a)))) *example*" "0\n")
 	      
     ;+
-    (cons "(reduce-frac 10/2)" "5\n")
+    (cons "(reduce-num 10/2)" "5\n")
     (cons "(binary-int-frac-plus 3 5/3)" "14/3\n")
     (cons "(binary-int-int-plus 3 24)" "27\n")
     (cons "(binary-frac-frac-plus 3/2 3/2)" "12/4\n")
     (cons "(binary-frac-frac-plus -3/2 -3/2)" "-12/4\n") 
-    (cons "(reduce-frac 1/2)" "1/2\n")
+    (cons "(reduce-num 1/2)" "1/2\n")
     (cons "(opposite-num 1)" "-1\n")
     (cons "(opposite-num 1/2)" "-1/2\n")
     
@@ -1214,12 +1336,12 @@
     (cons "(binary-int-int-mul -3 12)" "-36\n")
     (cons "(binary-int-int-mul 5 0)" "0\n")
     (cons "(binary-int-frac-mul 2 1/2)" "2/2\n")
-    (cons "(reduce-frac (binary-int-frac-mul 2 1/2))" "1\n")
-    (cons "(reduce-frac (binary-int-frac-mul 12 4/6))" "8\n")
-    (cons "(reduce-frac (binary-int-frac-mul 5 2/4))" "5/2\n")
+    (cons "(reduce-num (binary-int-frac-mul 2 1/2))" "1\n")
+    (cons "(reduce-num (binary-int-frac-mul 12 4/6))" "8\n")
+    (cons "(reduce-num (binary-int-frac-mul 5 2/4))" "5/2\n")
     (cons "(binary-frac-frac-mul 1/3 3/2)" "3/6\n")
-    (cons "(reduce-frac (binary-frac-frac-mul 1/3 3/2))" "1/2\n")
-    (cons "(reduce-frac (binary-frac-frac-mul -2/3 3/2))" "-1\n")
+    (cons "(reduce-num (binary-frac-frac-mul 1/3 3/2))" "1/2\n")
+    (cons "(reduce-num (binary-frac-frac-mul -2/3 3/2))" "-1\n")
     
     (cons "(inverse-num -2)" "-1/2\n")
     (cons "(inverse-num 2/3)" "3/2\n")
@@ -1251,7 +1373,7 @@
 
 ;;; Tests list for debugging purposes
 (define tests
-  (list    
+  (list           
 
 ))
 
@@ -1275,6 +1397,6 @@
       (cons "Define" define-tests)
       (cons "Primitive Functions" primitive-functions-tests)
       ;(cons "Internal Helper Procedures" internal-helper-procedures-tests)
-      ;(cons "Debugging" tests)  
+      (cons "Debugging" tests)  
       
 ))
