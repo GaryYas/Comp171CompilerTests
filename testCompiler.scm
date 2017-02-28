@@ -872,9 +872,9 @@
     ; car, cdr and combinations
     (cons "(car '(a b))" "a\n")
     (cons "(cdr '(a b))" "(b . ())\n")
-    (cons "(caaaar '((((a))) b))" "a\n")
-    (cons "(cdadr '((((a))) (((b) c)) (((c))) (((d)))))" "()\n")
-    (cons "(cdaadr '((((a))) (((b e) c)) (((c))) (((d)))))" "(c . ())\n")
+    ;(cons "(caaaar '((((a))) b))" "a\n")
+    ;(cons "(cdadr '((((a))) (((b) c)) (((c))) (((d)))))" "()\n")
+    ;(cons "(cdaadr '((((a))) (((b e) c)) (((c))) (((d)))))" "(c . ())\n")
     
     ;list
     (cons "(list)" "()\n")
@@ -903,7 +903,7 @@
     ;map
     (cons "(map (lambda (x) x) '(1 2 3))" "(1 . (2 . (3 . ())))\n")
     (cons "(map car '((1) (2) (3)))" "(1 . (2 . (3 . ())))\n")
-    (cons "(map caar '(((1)) ((2)) ((3))))" "(1 . (2 . (3 . ())))\n")
+    ;(cons "(map caar '(((1)) ((2)) ((3))))" "(1 . (2 . (3 . ())))\n")
     (cons "(map cdr (list))" "()\n")
     (cons "(map (lambda (x y) (cons x y)) '(1 2) '(3 4))" "((1 . 3) . ((2 . 4) . ()))\n")
     (cons "(map list '(1 2) '(3 4) '(5 6) '(7 8) '(9 10))" "((1 . (3 . (5 . (7 . (9 . ()))))) . ((2 . (4 . (6 . (8 . (10 . ()))))) . ()))\n")
@@ -1048,6 +1048,8 @@
     (cons "(numerator -15/10)" "-3\n")
     
     ;make-string
+    (cons "(make-string 1)" "\"\\000\"\n")
+    (cons "(make-string 3)" "\"\\000\\000\\000\"\n")    
     (cons "(make-string 1 #\\a)" "\"a\"\n")
     (cons "(make-string 5 #\\A)" "\"AAAAA\"\n")
     (cons "(make-string 0 #\\space)" "\"\"\n")
@@ -1059,6 +1061,8 @@
     (cons "(make-vector 0 #\\Z)" "#0()\n") 
     (cons "(make-vector 12 #t)" "#12(#t #t #t #t #t #t #t #t #t #t #t #t)\n")  
     (cons "(make-vector 4 -6/8)" "#4(-3/4 -3/4 -3/4 -3/4)\n")  
+    (cons "(make-vector 1)" "#1(0)\n")
+    (cons "(make-vector 3)" "#3(0 0 0)\n")    
     
     ;procedure?
     (cons "(procedure? 1)" "#f\n")
@@ -1285,6 +1289,51 @@
     (cons "(begin 'aBc (string->symbol \"aBc\"))" "aBc\n")
 ))
 
+(define eq-tests
+  (list
+    ;void
+    (cons "(begin (define x 5) (eq? (set! x 6) (set! x -1/2)))" "#t\n")
+    
+    ;nil
+    (cons "(eq? '() (list))" "#t\n")
+    (cons "(eq? '() (append))" "#t\n")
+    
+    ;char
+    (cons "(eq? #\\a #\\a)" "#t\n")
+    
+    ;string
+    (cons "(eq? \"a\" (make-string 1 #\\a))" "#f\n")
+    (cons "(eq? (symbol->string 'abc) (symbol->string 'abc))" "#t\n")
+    
+    ;integer
+    (cons "(eq? 1 (+ 1/2 1/2))" "#t\n")
+    (cons "(eq? 1 (+ 1/2 1/4))" "#f\n")
+    
+    ;fraction
+    (cons "(eq? 1/2 (/ 2 4))" "#t\n")
+    
+    ;boolean
+    (cons "(eq? #t (zero? 0))" "#t\n")
+    (cons "(eq? #t (integer? 1))" "#t\n")
+    (cons "(eq? #f (integer? 1/2))" "#t\n")
+    
+    ;list
+    (cons "(eq? '(1) '(1))" "#t\n")
+    (cons "(eq? '(1) (list 1))" "#f\n")
+    (cons "(eq? (list 1) (list 1))" "#f\n")
+    
+    ;vector
+    (cons "(eq? '#(1) '#(1))" "#t\n")
+    (cons "(eq? '#(1) (make-vector 1 1))" "#f\n")
+    (cons "(eq? (make-vector 1 1) (make-vector 1 1))" "#f\n")
+    
+    ;symbol
+    (cons "(eq? (string->symbol \"a\") (string->symbol (make-string 1 #\\a)))" "#t\n")
+    (cons "(eq? (string->symbol (make-string 1 #\\a)) (string->symbol (make-string 1 #\\a)))" "#t\n")
+    (cons "(eq? (string->symbol \"bb\") (string->symbol (make-string 2 #\\b)))" "#t\n")
+    (cons "(eq? (string->symbol \"aa\") (string->symbol (make-string 2 #\\b)))" "#f\n")
+))
+
 (define internal-helper-procedures-tests
   (list
     ;one-list-map
@@ -1297,10 +1346,10 @@
     (cons "(foldr cons '() '(1 2 3))" "(1 . (2 . (3 . ())))\n")
     
     ;binary-append
-    (cons "(binary-append '(1 2) '(3 4 5))" "(1 . (2 . (3 . (4 . (5 . ())))))\n")
-    (cons "(binary-append '(1 2) '())" "(1 . (2 . ()))\n")
-    (cons "(binary-append '(1) '(2))" "(1 . (2 . ()))\n")
-    (cons "(binary-append '() '(1 2))" "(1 . (2 . ()))\n")
+    ;(cons "(binary-append '(1 2) '(3 4 5))" "(1 . (2 . (3 . (4 . (5 . ())))))\n")
+    ;(cons "(binary-append '(1 2) '())" "(1 . (2 . ()))\n")
+    ;(cons "(binary-append '(1) '(2))" "(1 . (2 . ()))\n")
+    ;(cons "(binary-append '() '(1 2))" "(1 . (2 . ()))\n")
     
     ;list-to-vector - helper procedure
     (cons "(list-to-vector '())" "#0()\n")
@@ -1309,17 +1358,17 @@
    
     
     ;box-get box-set box
-    (cons "((lambda (x) (box-get x)) (box 5))" "5\n")
-    (cons "((lambda (y) ((lambda (x) (box-get y)) 5)) (box '(a b c)))" "(a . (b . (c . ())))\n")
-    (cons "((lambda (y) ((lambda (x) (begin (box-set y 12) (box-get y))) 5)) (box '(a b c)))" "12\n")
-    (cons "((lambda (x) (begin (box-set x \"AbC\") (box-get x))) (box 5))" "\"AbC\"\n")
-    (cons "((lambda (y) ((lambda (x) (set! x (box x)) (box-get x)) 1)) (box '(a b c)))" "1\n")
-    (cons
-	  "(define *example*
-	    (let ((a 0))
-	      (begin (lambda () a)
-	      (lambda () (set! a (+ a 1)))
-	      ((lambda (b) (set! a b) a) a)))) *example*" "0\n")
+;;     (cons "((lambda (x) (box-get x)) (box 5))" "5\n")
+;;     (cons "((lambda (y) ((lambda (x) (box-get y)) 5)) (box '(a b c)))" "(a . (b . (c . ())))\n")
+;;     (cons "((lambda (y) ((lambda (x) (begin (box-set y 12) (box-get y))) 5)) (box '(a b c)))" "12\n")
+;;     (cons "((lambda (x) (begin (box-set x \"AbC\") (box-get x))) (box 5))" "\"AbC\"\n")
+;;     (cons "((lambda (y) ((lambda (x) (set! x (box x)) (box-get x)) 1)) (box '(a b c)))" "1\n")
+;;     (cons
+;; 	  "(define *example*
+;; 	    (let ((a 0))
+;; 	      (begin (lambda () a)
+;; 	      (lambda () (set! a (+ a 1)))
+;; 	      ((lambda (b) (set! a b) a) a)))) *example*" "0\n")
 	      
     ;+
     (cons "(reduce-num 10/2)" "5\n")
@@ -1369,12 +1418,19 @@
     (cons "(binary-eq 1/2 2/4)" "#t\n")
     (cons "(binary-eq 2 4/2)" "#t\n")
     (cons "(binary-eq -1 -1)" "#t\n")
+    
+    ;(cons "(string-equal \"a\" \"a\")" "#t\n")
+    ;(cons "(string-equal \"aa\" (make-string 3 #\\a))" "#f\n")
+    ;(cons "(string-equal \"abc\" \"abd\")" "#f\n")
+    ;(cons "(string-equal \"aaa\" (make-string 3 #\\a))" "#t\n")
+    ;(cons "(string-equal \"aaa\" (make-string 3 #\\A))" "#f\n")
+    ;(cons "(string-equal \"aab\" (make-string 3 #\\a))" "#f\n")
+    ;(cons "(begin 'abc (string-equal \"abc\" (symbol->string 'abc)))" "#t\n")    
 ))
 
 ;;; Tests list for debugging purposes
 (define tests
-  (list           
-
+  (list
 ))
 
 (load "CompilerTests/comp161-torture-if-test.scm")
@@ -1396,7 +1452,8 @@
       (cons "pvar-bvar" pvar-bvar-tests)
       (cons "Define" define-tests)
       (cons "Primitive Functions" primitive-functions-tests)
+      (cons "eq?" eq-tests) 
       ;(cons "Internal Helper Procedures" internal-helper-procedures-tests)
-      (cons "Debugging" tests)  
+      ;(cons "Debugging" tests)  
       
 ))
