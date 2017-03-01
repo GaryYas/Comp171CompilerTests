@@ -21,21 +21,8 @@
       (try-thunk))
       (try-thunk))
 ))
-
-(define file->sexprs
-  (lambda (filename)
-  (let ((input (open-input-file filename)))
-  (letrec ((run
-  (lambda ()
-  (let ((e (read input)))
-  (if (eof-object? e)
-  (begin (close-input-port input)
-  '())
-  (cons e (run)))))))
-  (run)))
-))
 		
-(define file->string
+(define tests-file->string
   (lambda (in-file)
     (let ((in-port (open-input-file in-file)))
       (letrec ((run
@@ -49,7 +36,7 @@
 	(list->string (run))))
 ))
 
-(define string->file
+(define tests-string->file
   (lambda (str out-file)
     (letrec ((out-port (open-output-file out-file))
 	  (run (lambda (lst)
@@ -78,11 +65,11 @@
     (system "rm -f outFile")
     (system "rm -f outFile.c")
     (system "rm -f outFile.scm")
-    (string->file input "outFile.scm")
+    (tests-string->file input "outFile.scm")
     (compile-scheme-file "outFile.scm" "outFile.c")
     (system "gcc -o outFile outFile.c")
     (system "./outFile > outResult")
-    (let ((result (file->string "outResult")))
+    (let ((result (tests-file->string "outResult")))
       result)
 ))
 
@@ -92,11 +79,11 @@
     (system "rm -f outFile")
     (system "rm -f outFile.c")
     (system "rm -f outFile.scm")
-    (string->file input "outFile.scm")
+    (tests-string->file input "outFile.scm")
     (compile-scheme-file "outFile.scm" "outFile.c")
     (system "gcc -o outFile outFile.c")
     (system "./outFile > outResult")
-    (let ((result (file->string "outResult")))
+    (let ((result (tests-file->string "outResult")))
       (system "rm -f outResult")
       (system "rm -f outFile")
       ;(system "rm -f outFile.c")
@@ -107,7 +94,7 @@
 (define expected-result
   (lambda (input)
     (let* ((exp-res (eval input))
-	  (exp-res-str (file->string (string->file exp-res "expRes.scm"))))
+	  (exp-res-str (tests-file->string (tests-string->file exp-res "expRes.scm"))))
       exp-res-str)
 ))
 		
@@ -209,6 +196,11 @@
     (cons "'#((1 2) 3 4 #t #f -8/17 #(5 6))" "#7((1 . (2 . ())) 3 4 #t #f -8/17 #2(5 6))\n")
     (cons "'#(#(1))" "#1(#1(1))\n") 
     (cons "'#(#(5 6))" "#1(#2(5 6))\n")
+    
+    ;Quasi-Quote
+    (cons "(define x 5) `(,x)" "(5 . ())\n")
+    (cons "(define x 5) `(,@x)" "5\n")
+    (cons "(quasiquote (1 2 (unquote (+ 3 4))))" "(quasiquote (1 2 (unquote (+ 3 4))))\n")
 ))
 
 (define or-if-begin-tests
@@ -889,6 +881,7 @@
     ;apply
     (cons "(apply car '((a)))" "a\n")
     (cons "(apply (lambda (x y z) (list x y z)) '(1 2 3))" "(1 . (2 . (3 . ())))\n")
+    (cons "((lambda x ((lambda (y) (apply car x)) 5)) '(1 2 3 4))" "1\n")
     
     ;cons
     (cons "(cons 1 2)" "(1 . 2)\n")
@@ -1150,6 +1143,7 @@
     (cons "(+ 1 2 3 -1/2 -3/4 -5/6 -7/8 9 12/5)" "1733/120\n")
     (cons "(+)" "0\n")
     (cons "(+ -5/6)" "-5/6\n")
+    (cons "(+ (+ 1 2) 1/3)" "10/3\n")
     
     ;-
     (cons "(- 5)" "-5\n")
@@ -1303,7 +1297,7 @@
     
     ;string
     (cons "(eq? \"a\" (make-string 1 #\\a))" "#f\n")
-    (cons "(eq? (symbol->string 'abc) (symbol->string 'abc))" "#t\n")
+    ;(cons "(eq? (symbol->string 'abc) (symbol->string 'abc))" "#t\n")
     
     ;integer
     (cons "(eq? 1 (+ 1/2 1/2))" "#t\n")
@@ -1337,13 +1331,13 @@
 (define internal-helper-procedures-tests
   (list
     ;one-list-map
-    (cons "(one-list-map (lambda (x) x) '(1 2 3))" "(1 . (2 . (3 . ())))\n")
-    (cons "(one-list-map car '((1) (2) (3)))" "(1 . (2 . (3 . ())))\n")
-    (cons "(one-list-map caar '(((1)) ((2)) ((3))))" "(1 . (2 . (3 . ())))\n")
-    (cons "(one-list-map cdr (list))" "()\n")
+    (cons "(asaf-lior-one-list-map (lambda (x) x) '(1 2 3))" "(1 . (2 . (3 . ())))\n")
+    (cons "(asaf-lior-one-list-map car '((1) (2) (3)))" "(1 . (2 . (3 . ())))\n")
+    ;(cons "(asaf-lior-one-list-map caar '(((1)) ((2)) ((3))))" "(1 . (2 . (3 . ())))\n")
+    (cons "(asaf-lior-one-list-map cdr (list))" "()\n")
     
     ;foldr
-    (cons "(foldr cons '() '(1 2 3))" "(1 . (2 . (3 . ())))\n")
+    (cons "(asaf-lior-foldr cons '() '(1 2 3))" "(1 . (2 . (3 . ())))\n")
     
     ;binary-append
     ;(cons "(binary-append '(1 2) '(3 4 5))" "(1 . (2 . (3 . (4 . (5 . ())))))\n")
@@ -1352,9 +1346,9 @@
     ;(cons "(binary-append '() '(1 2))" "(1 . (2 . ()))\n")
     
     ;list-to-vector - helper procedure
-    (cons "(list-to-vector '())" "#0()\n")
-    (cons "(list-to-vector '(1))" "#1(1)\n")
-    (cons "(list-to-vector (list 1 2 3 #t #f -1/2 \"a\" #\\b))" "#8(1 2 3 #t #f -1/2 \"a\" #\\b)\n")
+    (cons "(asaf-lior-list-to-vector '())" "#0()\n")
+    (cons "(asaf-lior-list-to-vector '(1))" "#1(1)\n")
+    (cons "(asaf-lior-list-to-vector (list 1 2 3 #t #f -1/2 \"a\" #\\b))" "#8(1 2 3 #t #f -1/2 \"a\" #\\b)\n")
    
     
     ;box-get box-set box
@@ -1371,53 +1365,53 @@
 ;; 	      ((lambda (b) (set! a b) a) a)))) *example*" "0\n")
 	      
     ;+
-    (cons "(reduce-num 10/2)" "5\n")
-    (cons "(binary-int-frac-plus 3 5/3)" "14/3\n")
-    (cons "(binary-int-int-plus 3 24)" "27\n")
-    (cons "(binary-frac-frac-plus 3/2 3/2)" "12/4\n")
-    (cons "(binary-frac-frac-plus -3/2 -3/2)" "-12/4\n") 
-    (cons "(reduce-num 1/2)" "1/2\n")
-    (cons "(opposite-num 1)" "-1\n")
-    (cons "(opposite-num 1/2)" "-1/2\n")
+    (cons "(asaf-lior-reduce-num 10/2)" "5\n")
+    (cons "(asaf-lior-binary-int-frac-plus 3 5/3)" "14/3\n")
+    (cons "(asaf-lior-binary-int-int-plus 3 24)" "27\n")
+    (cons "(asaf-lior-binary-frac-frac-plus 3/2 3/2)" "12/4\n")
+    (cons "(asaf-lior-binary-frac-frac-plus -3/2 -3/2)" "-12/4\n") 
+    (cons "(asaf-lior-reduce-num 1/2)" "1/2\n")
+    (cons "(asaf-lior-opposite-num 1)" "-1\n")
+    (cons "(asaf-lior-opposite-num 1/2)" "-1/2\n")
     
     ;*
-    (cons "(binary-int-int-mul 1 2)" "2\n")
-    (cons "(binary-int-int-mul -3 12)" "-36\n")
-    (cons "(binary-int-int-mul 5 0)" "0\n")
-    (cons "(binary-int-frac-mul 2 1/2)" "2/2\n")
-    (cons "(reduce-num (binary-int-frac-mul 2 1/2))" "1\n")
-    (cons "(reduce-num (binary-int-frac-mul 12 4/6))" "8\n")
-    (cons "(reduce-num (binary-int-frac-mul 5 2/4))" "5/2\n")
-    (cons "(binary-frac-frac-mul 1/3 3/2)" "3/6\n")
-    (cons "(reduce-num (binary-frac-frac-mul 1/3 3/2))" "1/2\n")
-    (cons "(reduce-num (binary-frac-frac-mul -2/3 3/2))" "-1\n")
+    (cons "(asaf-lior-binary-int-int-mul 1 2)" "2\n")
+    (cons "(asaf-lior-binary-int-int-mul -3 12)" "-36\n")
+    (cons "(asaf-lior-binary-int-int-mul 5 0)" "0\n")
+    (cons "(asaf-lior-binary-int-frac-mul 2 1/2)" "2/2\n")
+    (cons "(asaf-lior-reduce-num (asaf-lior-binary-int-frac-mul 2 1/2))" "1\n")
+    (cons "(asaf-lior-reduce-num (asaf-lior-binary-int-frac-mul 12 4/6))" "8\n")
+    (cons "(asaf-lior-reduce-num (asaf-lior-binary-int-frac-mul 5 2/4))" "5/2\n")
+    (cons "(asaf-lior-binary-frac-frac-mul 1/3 3/2)" "3/6\n")
+    (cons "(asaf-lior-reduce-num (asaf-lior-binary-frac-frac-mul 1/3 3/2))" "1/2\n")
+    (cons "(asaf-lior-reduce-num (asaf-lior-binary-frac-frac-mul -2/3 3/2))" "-1\n")
     
-    (cons "(inverse-num -2)" "-1/2\n")
-    (cons "(inverse-num 2/3)" "3/2\n")
-    (cons "(inverse-num -2/3)" "-3/2\n")
+    (cons "(asaf-lior-inverse-num -2)" "-1/2\n")
+    (cons "(asaf-lior-inverse-num 2/3)" "3/2\n")
+    (cons "(asaf-lior-inverse-num -2/3)" "-3/2\n")
     
-    (cons "(greater-than-int-int 1 2)" "#f\n")
-    (cons "(greater-than-int-int 3 -2)" "#t\n")
+    (cons "(asaf-lior-greater-than-int-int 1 2)" "#f\n")
+    (cons "(asaf-lior-greater-than-int-int 3 -2)" "#t\n")
     
-    (cons "(binary-gt 2 -1)" "#t\n")
-    (cons "(binary-gt 3/4 1/2)" "#t\n")
-    (cons "(binary-gt 5/4 1)" "#t\n")
-    (cons "(binary-gt 1 5/4)" "#f\n")
-    (cons "(binary-gt 2 5/4)" "#t\n")
+    (cons "(asaf-lior-binary-gt 2 -1)" "#t\n")
+    (cons "(asaf-lior-binary-gt 3/4 1/2)" "#t\n")
+    (cons "(asaf-lior-binary-gt 5/4 1)" "#t\n")
+    (cons "(asaf-lior-binary-gt 1 5/4)" "#f\n")
+    (cons "(asaf-lior-binary-gt 2 5/4)" "#t\n")
     
-    (cons "(binary-lt 1 2)" "#t\n")
-    (cons "(binary-lt 1 -1/2)" "#f\n")
-    (cons "(binary-lt -1 -1/2)" "#t\n")
-    (cons "(binary-lt -1/2 -3/4)" "#f\n")
-    (cons "(binary-lt 1/2 3/4)" "#t\n")
-    (cons "(binary-lt 3/4 1/2)" "#f\n")
+    (cons "(asaf-lior-binary-lt 1 2)" "#t\n")
+    (cons "(asaf-lior-binary-lt 1 -1/2)" "#f\n")
+    (cons "(asaf-lior-binary-lt -1 -1/2)" "#t\n")
+    (cons "(asaf-lior-binary-lt -1/2 -3/4)" "#f\n")
+    (cons "(asaf-lior-binary-lt 1/2 3/4)" "#t\n")
+    (cons "(asaf-lior-binary-lt 3/4 1/2)" "#f\n")
     
-    (cons "(binary-eq 1 1)" "#t\n")
-    (cons "(binary-eq 1 2)" "#f\n")
-    (cons "(binary-eq 1/2 1/4)" "#f\n")
-    (cons "(binary-eq 1/2 2/4)" "#t\n")
-    (cons "(binary-eq 2 4/2)" "#t\n")
-    (cons "(binary-eq -1 -1)" "#t\n")
+    (cons "(asaf-lior-binary-eq 1 1)" "#t\n")
+    (cons "(asaf-lior-binary-eq 1 2)" "#f\n")
+    (cons "(asaf-lior-binary-eq 1/2 1/4)" "#f\n")
+    (cons "(asaf-lior-binary-eq 1/2 2/4)" "#t\n")
+    (cons "(asaf-lior-binary-eq 2 4/2)" "#t\n")
+    (cons "(asaf-lior-binary-eq -1 -1)" "#t\n")
     
     ;(cons "(string-equal \"a\" \"a\")" "#t\n")
     ;(cons "(string-equal \"aa\" (make-string 3 #\\a))" "#f\n")
@@ -1431,7 +1425,7 @@
 ;;; Tests list for debugging purposes
 (define tests
   (list
-))
+))    
 
 (load "CompilerTests/comp161-torture-if-test.scm")
 
