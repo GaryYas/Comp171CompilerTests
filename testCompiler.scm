@@ -1427,7 +1427,7 @@
   (list
 ))    
 
-(load "CompilerTests/comp161-torture-if-test.scm")
+(load "comp161-torture-if-test.scm")
 
 
 (display (format "\033[1mComp171 - Compiler Tests\033[0m\n================================\n"))
