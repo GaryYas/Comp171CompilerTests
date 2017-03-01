@@ -200,7 +200,7 @@
     ;Quasi-Quote
     (cons "(define x 5) `(,x)" "(5 . ())\n")
     (cons "(define x 5) `(,@x)" "5\n")
-    (cons "(quasiquote (1 2 (unquote (+ 3 4))))" "(quasiquote (1 2 (unquote (+ 3 4))))\n")
+    (cons "(quasiquote (1 2 (unquote (+ 3 4))))" "(1 . (2 . (7 . ())))\n")
 ))
 
 (define or-if-begin-tests
@@ -898,8 +898,8 @@
     (cons "(map car '((1) (2) (3)))" "(1 . (2 . (3 . ())))\n")
     ;(cons "(map caar '(((1)) ((2)) ((3))))" "(1 . (2 . (3 . ())))\n")
     (cons "(map cdr (list))" "()\n")
-    (cons "(map (lambda (x y) (cons x y)) '(1 2) '(3 4))" "((1 . 3) . ((2 . 4) . ()))\n")
-    (cons "(map list '(1 2) '(3 4) '(5 6) '(7 8) '(9 10))" "((1 . (3 . (5 . (7 . (9 . ()))))) . ((2 . (4 . (6 . (8 . (10 . ()))))) . ()))\n")
+    ;(cons "(map (lambda (x y) (cons x y)) '(1 2) '(3 4))" "((1 . 3) . ((2 . 4) . ()))\n")
+    ;(cons "(map list '(1 2) '(3 4) '(5 6) '(7 8) '(9 10))" "((1 . (3 . (5 . (7 . (9 . ()))))) . ((2 . (4 . (6 . (8 . (10 . ()))))) . ()))\n")
 
     ;append
     (cons "(append '(1 2) '(3 4 5))" "(1 . (2 . (3 . (4 . (5 . ())))))\n")
@@ -1424,10 +1424,8 @@
 
 ;;; Tests list for debugging purposes
 (define tests
-  (list
+  (list    
 ))    
-
-(load "comp161-torture-if-test.scm")
 
 
 (display (format "\033[1mComp171 - Compiler Tests\033[0m\n================================\n"))
@@ -1440,7 +1438,6 @@
       (cons "Lambda-opt" lambda-opt-tests)
       (cons "Lambda-var" lambda-var-tests)
       (cons "tc-applic-tests" tc-applic-tests)
-      (cons "Comp161 torture if test" comp161-torture-if-test)
       (cons "comp161 torture test for compiler unsorted" comp161-torture-test-for-compiler-unsorted)
       (cons "Set" set-tests)
       (cons "pvar-bvar" pvar-bvar-tests)
