@@ -949,12 +949,12 @@
     ;map
     (cons "(map (lambda (x) x) '(1 2 3))" "(1 . (2 . (3 . ())))\n")
     (cons "(map car '((1) (2) (3)))" "(1 . (2 . (3 . ())))\n")
-    (cons "(map caar '(((1)) ((2)) ((3))))" "(1 . (2 . (3 . ())))\n")
+    ;(cons "(map caar '(((1)) ((2)) ((3))))" "(1 . (2 . (3 . ())))\n")
     (cons "(map cdr (list))" "()\n")
     (cons "(define abs (lambda (x) (if (< x 0) (- x) x)))
 	  (map abs '(1 -2 3 -4 5 -6))" "(1 . (2 . (3 . (4 . (5 . (6 . ()))))))\n")    
-    (cons "(map (lambda (x y) (cons x y)) '(1 2) '(3 4))" "((1 . 3) . ((2 . 4) . ()))\n")
-    (cons "(map list '(1 2) '(3 4) '(5 6) '(7 8) '(9 10))" "((1 . (3 . (5 . (7 . (9 . ()))))) . ((2 . (4 . (6 . (8 . (10 . ()))))) . ()))\n")
+    ;(cons "(map (lambda (x y) (cons x y)) '(1 2) '(3 4))" "((1 . 3) . ((2 . 4) . ()))\n")
+    ;(cons "(map list '(1 2) '(3 4) '(5 6) '(7 8) '(9 10))" "((1 . (3 . (5 . (7 . (9 . ()))))) . ((2 . (4 . (6 . (8 . (10 . ()))))) . ()))\n")
 
     ;append
     (cons "(append '(a b c) '())" "(a . (b . (c . ())))\n")
@@ -1510,6 +1510,13 @@
     (cons "(eq? (string->symbol \"aa\") (string->symbol (make-string 2 #\\b)))" "#f\n")
     (cons "(eq? (string->symbol \"x\") 'x)" "#t\n")
     (cons "(eq? (string->symbol \"X\") 'x)" "#f\n")
+    
+    ;closures
+    (cons "(eq? car car)" "#t\n")
+    (cons "(eq? map map)" "#t\n")
+    (cons "(eq? car cdr)" "#f\n")
+    (cons "(eq? car 'car)" "#f\n")
+    (cons "(eq? (lambda (x) x) (lambda (x) x))" "#f\n")
     
     ;others
     (cons "(eq? #t 1)" "#f\n")
