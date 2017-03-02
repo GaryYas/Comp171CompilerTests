@@ -1607,9 +1607,18 @@
     ;(cons "(begin 'abc (string-equal \"abc\" (symbol->string 'abc)))" "#t\n")    
 ))
 
+(define ass1-comments-tests
+  (list
+    (cons "## 2 - #; 3 - 4 + 5 * 6 + 7 8 - 5" "-11\n")
+    (cons "## - 5 / 1 - (4 - 5) + ## (+ 1 2)" "-1\n")
+    (cons "## 2 + #; 3 - 4 8" "10\n")
+    (cons "#% (1+2) " "3\n")
+))  
+
 ;;; Tests list for debugging purposes
 (define tests
   (list   
+
 ))    
 
 
@@ -1629,6 +1638,7 @@
       (cons "Define" define-tests)
       (cons "Primitive Functions" primitive-functions-tests)
       (cons "eq?" eq-tests) 
+      (cons "Ass1 Comments Tests" ass1-comments-tests)
       ;(cons "Internal Helper Procedures" internal-helper-procedures-tests)
       ;(cons "Debugging" tests)  
       
