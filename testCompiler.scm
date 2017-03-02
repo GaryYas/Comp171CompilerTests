@@ -201,12 +201,6 @@
     (cons "(define x 5) `(,x)" "(5 . ())\n")
     (cons "(define x 5) `(,@x)" "5\n")
     (cons "(quasiquote (1 2 (unquote (+ 3 4))))" "(1 . (2 . (7 . ())))\n")
-    
-    ;Empty file
-    (cons "" "")
-    
-    ; File with only comments
-    (cons ";comment1\n;comment2\n;comment3" "")
 ))
 
 (define or-if-begin-tests
