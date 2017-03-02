@@ -943,12 +943,12 @@
     ;map
     (cons "(map (lambda (x) x) '(1 2 3))" "(1 . (2 . (3 . ())))\n")
     (cons "(map car '((1) (2) (3)))" "(1 . (2 . (3 . ())))\n")
-    ;(cons "(map caar '(((1)) ((2)) ((3))))" "(1 . (2 . (3 . ())))\n")
+    (cons "(map caar '(((1)) ((2)) ((3))))" "(1 . (2 . (3 . ())))\n")
     (cons "(map cdr (list))" "()\n")
     (cons "(define abs (lambda (x) (if (< x 0) (- x) x)))
 	  (map abs '(1 -2 3 -4 5 -6))" "(1 . (2 . (3 . (4 . (5 . (6 . ()))))))\n")    
-    ;(cons "(map (lambda (x y) (cons x y)) '(1 2) '(3 4))" "((1 . 3) . ((2 . 4) . ()))\n")
-    ;(cons "(map list '(1 2) '(3 4) '(5 6) '(7 8) '(9 10))" "((1 . (3 . (5 . (7 . (9 . ()))))) . ((2 . (4 . (6 . (8 . (10 . ()))))) . ()))\n")
+    (cons "(map (lambda (x y) (cons x y)) '(1 2) '(3 4))" "((1 . 3) . ((2 . 4) . ()))\n")
+    (cons "(map list '(1 2) '(3 4) '(5 6) '(7 8) '(9 10))" "((1 . (3 . (5 . (7 . (9 . ()))))) . ((2 . (4 . (6 . (8 . (10 . ()))))) . ()))\n")
 
     ;append
     (cons "(append '(a b c) '())" "(a . (b . (c . ())))\n")
@@ -1607,8 +1607,10 @@
     ;(cons "(begin 'abc (string-equal \"abc\" (symbol->string 'abc)))" "#t\n")    
 ))
 
-(define ass1-comments-tests
+(define comments-tests
   (list
+    (cons "" "")
+    (cons ";comment1\n;comment2\n;comment3" "")
     (cons "## 2 - #; 3 - 4 + 5 * 6 + 7 8 - 5" "-11\n")
     (cons "## - 5 / 1 - (4 - 5) + ## (+ 1 2)" "-1\n")
     (cons "## 2 + #; 3 - 4 8" "10\n")
@@ -1638,7 +1640,7 @@
       (cons "Define" define-tests)
       (cons "Primitive Functions" primitive-functions-tests)
       (cons "eq?" eq-tests) 
-      (cons "Ass1 Comments Tests" ass1-comments-tests)
+      (cons "Comments Tests" comments-tests)
       ;(cons "Internal Helper Procedures" internal-helper-procedures-tests)
       ;(cons "Debugging" tests)  
       
