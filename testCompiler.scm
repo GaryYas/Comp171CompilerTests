@@ -86,7 +86,7 @@
     (let ((result (tests-file->string "outResult")))
       (system "rm -f outResult")
       (system "rm -f outFile")
-      ;(system "rm -f outFile.c")
+      (system "rm -f outFile.c")
       (system "rm -f outFile.scm")
       result)
 ))
@@ -201,6 +201,12 @@
     (cons "(define x 5) `(,x)" "(5 . ())\n")
     (cons "(define x 5) `(,@x)" "5\n")
     (cons "(quasiquote (1 2 (unquote (+ 3 4))))" "(1 . (2 . (7 . ())))\n")
+    
+    ;Empty file
+    (cons "" "")
+    
+    ; File with only comments
+    (cons ";comment1\n;comment2\n;comment3" "")
 ))
 
 (define or-if-begin-tests
@@ -1607,16 +1613,6 @@
     ;(cons "(begin 'abc (string-equal \"abc\" (symbol->string 'abc)))" "#t\n")    
 ))
 
-(define comments-tests
-  (list
-    (cons "" "")
-    (cons ";comment1\n;comment2\n;comment3" "")
-    (cons "## 2 - #; 3 - 4 + 5 * 6 + 7 8 - 5" "-11\n")
-    (cons "## - 5 / 1 - (4 - 5) + ## (+ 1 2)" "-1\n")
-    (cons "## 2 + #; 3 - 4 8" "10\n")
-    (cons "#% (1+2) " "3\n")
-))  
-
 ;;; Tests list for debugging purposes
 (define tests
   (list   
@@ -1640,7 +1636,6 @@
       (cons "Define" define-tests)
       (cons "Primitive Functions" primitive-functions-tests)
       (cons "eq?" eq-tests) 
-      (cons "Comments Tests" comments-tests)
       ;(cons "Internal Helper Procedures" internal-helper-procedures-tests)
       ;(cons "Debugging" tests)  
       
